@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 #include "HttpClientParameters.h"
+#include "../Common/HttpRequest.h"
+#include "../Common/HttpResponse.h"
 
 class HttpClient
 {
@@ -9,4 +11,13 @@ public:
 	{
 		return std::make_shared<HttpClient>();
 	}
+
+	template<typename Func>
+	void SendAsync(const HttpRequest& request, Func func)
+	{
+
+	}
+
+private:
+
 };

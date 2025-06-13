@@ -1,6 +1,9 @@
 #pragma once
 #include <boost/asio.hpp>
 #include "../HttpClient/HttpClient.h"
+#include "../Common/HttpRequest.h"
+#include "../Common/HttpResponse.h"
+
 
 class Tester
 {
@@ -18,5 +21,8 @@ public:
 		parameters.m_executor = m_executor;
 
 		auto client = HttpClient::Make(std::move(parameters));
+
+		HttpRequest request;
+		client->SendAsync(request, [](std::error_code err, HttpResponse response) {});
 	}
 };
