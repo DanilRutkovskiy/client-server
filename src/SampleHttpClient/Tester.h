@@ -23,6 +23,17 @@ public:
 		auto client = HttpClient::Make(std::move(parameters));
 
 		HttpRequest request;
-		client->SendAsync(request, [](std::error_code err, HttpResponse response) {});
+		client->SendAsync(request, [](std::error_code err, HttpResponse response) 
+			{
+				if (err)
+				{
+					std::cout << "error occured: " << err.message() << std::endl;
+					return;
+				}
+
+				std::cout << "Request succeeded. \n" 
+					"Response code: " << response.m_statusCode << std::endl <<
+					"Response body: " << response.m_body << std::endl;
+			});
 	}
 };
