@@ -26,5 +26,8 @@
     <ClInclude Include="..\..\src\HttpClient\HttpClientParameters.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\HttpClient\ConnectionParameters.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

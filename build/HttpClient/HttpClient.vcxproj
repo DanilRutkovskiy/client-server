@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\src\HttpClient\delete.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\HttpClient\ConnectionParameters.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpClient.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpClientParameters.h" />
   </ItemGroup>

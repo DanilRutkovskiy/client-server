@@ -22,6 +22,9 @@ public:
 
 		auto client = HttpClient::Make(std::move(parameters));
 
+		ConnectionParameters connParams;
+		client->ConnectAsync(std::move(connParams), [](std::error_code err) {});
+
 		HttpRequest request;
 		client->SendAsync(request, [](std::error_code err, HttpResponse response) 
 			{
