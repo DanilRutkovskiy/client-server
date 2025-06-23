@@ -14,33 +14,35 @@ public:
 		return std::shared_ptr<HttpClient>(new HttpClient(std::move(parameters)));
 	}
 
-	template<typename Func>
-	void ConnectAsync(ConnectionParameters request, Func func)
-	{	
+	template<typename Callable>
+	void ConnectAsync(ConnectionParameters connectionParams, Callable callable)
+	{
 		m_resolver.async_resolve(
-			"google.com", "80", 
-			[](boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) 
+			connectionParams.m_host, connectionParams.m_port,
+			[callable = std::move(callable)]
+			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
 				if (err)
 				{
 					std::cout << "error: " << err.message() << std::endl;
+					return callable(err);
 				}
-				else
-				{
-					std::cout << "successfully resolved" << std::endl;
-				}
+
+				std::cout << "successfully resolved" << std::endl;
+				callable(std::error_code());
 			}
 		);
 	}
 
-	template<typename Func>
-	void SendAsync(const HttpRequest& request, Func func)
+	template<typename Callable>
+	void SendAsync(const HttpRequest& request, Callable callable)
 	{
-		post(m_parameters.m_executor, [f = std::move(func)]()
+		post(m_parameters.m_executor, 
+			[callable = std::move(callable)]() mutable
 			{
 				HttpResponse response{};
 				response.m_body = "glad to know you";
-				f(std::error_code(), std::move(response));
+				callable(std::error_code(), std::move(response));
 			});
 	}
 

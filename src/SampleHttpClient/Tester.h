@@ -23,6 +23,8 @@ public:
 		auto client = HttpClient::Make(std::move(parameters));
 
 		ConnectionParameters connParams;
+		connParams.m_host = "google.com";
+		connParams.m_port = "80";
 		client->ConnectAsync(std::move(connParams), [](std::error_code err) {});
 
 		HttpRequest request;
