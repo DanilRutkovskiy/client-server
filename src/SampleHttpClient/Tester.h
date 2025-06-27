@@ -25,7 +25,15 @@ public:
 		ConnectionParameters connParams;
 		connParams.m_host = "google.com";
 		connParams.m_port = "80";
-		client->ConnectAsync(std::move(connParams), [](std::error_code err) {});
+		client->ConnectAsync(std::move(connParams), [](std::error_code err) 
+			{
+				if (err)
+				{
+					std::cout << "ConnectAsync error occured: " << err.message() << std::endl;
+					return;
+				}
+				std::cout << "ConnectAsync success" << std::endl;
+			});
 
 		HttpRequest request;
 		client->SendAsync(request, [](std::error_code err, HttpResponse response) 
