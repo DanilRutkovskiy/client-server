@@ -6,7 +6,7 @@
 #include "../Common/HttpRequest.h"
 #include "../Common/HttpResponse.h"
 
-class HttpClient
+class HttpClient : public std::enable_shared_from_this<HttpClient>
 {
 public:
 	static std::shared_ptr<HttpClient> Make(HttpClientParameters parameters)
@@ -20,7 +20,7 @@ public:
 		m_resolver.async_resolve
 		(
 			connectionParams.m_host, connectionParams.m_port,
-			[callable = std::move(callable), &m_socket = m_socket]
+			[callable = std::move(callable), sharedThis = this->shared_from_this()]
 			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
 				if (err)
@@ -29,7 +29,10 @@ public:
 					return callable(err);
 				}
 
-				boost::asio::async_connect(m_socket, endpoints, [callable = std::move(callable)](boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
+				boost::asio::ip::tcp::socket& socket = sharedThis->m_socket;
+				boost::asio::async_connect(socket, endpoints,
+					[callable = std::move(callable), sharedThis = std::move(sharedThis)]
+					(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
 					{
 						if (err)
 						{
@@ -50,7 +53,7 @@ public:
 	void SendAsync(const HttpRequest& request, Callable callable)
 	{
 		post(m_parameters.m_executor, 
-			[callable = std::move(callable)]() mutable
+			[callable = std::move(callable), sharedThis = this->shared_from_this()]() mutable
 			{
 				HttpResponse response{};
 				response.m_body = "glad to know you";
@@ -68,6 +71,8 @@ protected:
 
 	}
 
+
+protected:
 	HttpClientParameters m_parameters;
 	boost::asio::ip::tcp::resolver m_resolver;
 	boost::asio::ip::tcp::socket m_socket;
