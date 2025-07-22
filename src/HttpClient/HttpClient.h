@@ -20,7 +20,7 @@ public:
 		m_resolver.async_resolve
 		(
 			connectionParams.m_host, connectionParams.m_port,
-			[callable = std::move(callable), socket = m_socket]
+			[callable = std::move(callable), &m_socket = m_socket]
 			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
 				if (err)
@@ -29,7 +29,7 @@ public:
 					return callable(err);
 				}
 
-				boost::asio::async_connect(socket, endpoints, [callable = std::move(callable)](boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
+				boost::asio::async_connect(m_socket, endpoints, [callable = std::move(callable)](boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
 					{
 						if (err)
 						{
