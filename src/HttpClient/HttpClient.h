@@ -17,30 +17,35 @@ public:
 	template<typename Callable>
 	void ConnectAsync(ConnectionParameters connectionParams, Callable callable)
 	{
-		m_resolver.async_resolve
+		m_resolver.async_resolve	
 		(
 			connectionParams.m_host, connectionParams.m_port,
-			[callable = std::move(callable), sharedThis = this->shared_from_this()]
+			[callable = std::move(callable), sharedThis = this->shared_from_this(), this]
 			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
 				if (err)
 				{
-					std::cout << "error: " << err.message() << std::endl;
-					return callable(err);
+					std::cout << "resolve error oocured: " << err.message() << std::endl;
+					callable(err);
+					DeferDeletion();
+					return;
 				}
 
 				boost::asio::ip::tcp::socket& socket = sharedThis->m_socket;
 				boost::asio::async_connect(socket, endpoints,
-					[callable = std::move(callable), sharedThis = std::move(sharedThis)]
+					[callable = std::move(callable), sharedThis = std::move(sharedThis), this]
 					(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
 					{
 						if (err)
 						{
-							std::cout << "can not connect error occured: " << err.message() << std::endl;
-							return callable(err);
+							std::cout << "connect error occured: " << err.message() << std::endl;
+							callable(err);
+							DeferDeletion();
+
 						}
 
 						callable(std::error_code{});
+						DeferDeletion();
 					});
 
 				//std::cout << "successfully resolved" << std::endl;
@@ -53,11 +58,12 @@ public:
 	void SendAsync(const HttpRequest& request, Callable callable)
 	{
 		post(m_parameters.m_executor, 
-			[callable = std::move(callable), sharedThis = this->shared_from_this()]() mutable
+			[callable = std::move(callable), sharedThis = this->shared_from_this(), this]() mutable
 			{
 				HttpResponse response{};
 				response.m_body = "glad to know you";
 				callable(std::error_code(), std::move(response));
+				DeferDeletion();
 			});
 	}
 
@@ -71,6 +77,14 @@ protected:
 
 	}
 
+	void DeferDeletion()
+	{
+		post(m_parameters.m_executor,
+			[sharedThis = this->shared_from_this()]() mutable
+			{
+				sharedThis.reset();
+			});
+	}
 
 protected:
 	HttpClientParameters m_parameters;
