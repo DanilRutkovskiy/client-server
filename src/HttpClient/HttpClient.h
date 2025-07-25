@@ -55,16 +55,19 @@ public:
 	}
 
 	template<typename Callable>
-	void SendAsync(const HttpRequest& request, Callable callable)
+	void SendAsync(const std::string& hhtpMessage, Callable callable)
 	{
+		SendMessageThroughSocket(m_socket, hhtpMessage, std::move(callable));
+		/*
 		post(m_parameters.m_executor, 
 			[callable = std::move(callable), sharedThis = this->shared_from_this(), this]() mutable
 			{
-				HttpResponse response{};
-				response.m_body = "glad to know you";
-				callable(std::error_code(), std::move(response));
+
+
+				//callable(std::error_code(), std::move(response));
 				DeferDeletion();
 			});
+		*/
 	}
 
 protected:
@@ -75,6 +78,21 @@ protected:
 		m_socket(m_parameters.m_executor)
 	{
 
+	}
+
+	template<typename Callable>
+	void SendMessageThroughSocket(boost::asio::ip::tcp::socket& socket, const std::string& content, Callable callable)
+	{
+		std::ostream os(&m_request);
+		os << content;
+
+		boost::asio::async_write(socket, m_request, 
+			[callable = std::move(callable)]
+			(boost::system::error_code err, std::size_t bytes_transfered)
+			{
+				HttpResponse response;
+				callable(err, response);
+			});
 	}
 
 	void DeferDeletion()
@@ -90,4 +108,6 @@ protected:
 	HttpClientParameters m_parameters;
 	boost::asio::ip::tcp::resolver m_resolver;
 	boost::asio::ip::tcp::socket m_socket;
+	boost::asio::streambuf m_request;
+
 };

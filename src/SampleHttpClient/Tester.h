@@ -23,7 +23,7 @@ public:
 		auto client = HttpClient::Make(std::move(parameters));
 
 		ConnectionParameters connParams;
-		connParams.m_host = "google.com";
+		connParams.m_host = "httpbin.org";
 		connParams.m_port = "80";
 		client->ConnectAsync(std::move(connParams), 
 			[client](std::error_code err) 
@@ -36,7 +36,11 @@ public:
 				std::cout << "ConnectAsync success" << std::endl;
 
 				HttpRequest request;
-				client->SendAsync(request, [](std::error_code err, HttpResponse response)
+				std::string message = 
+					"GET /get HTTP/1.1\r\n"
+					"Host: httpbin.org\r\n"
+					"\r\n";
+				client->SendAsync(message, [](std::error_code err, HttpResponse response)
 					{
 						if (err)
 						{
