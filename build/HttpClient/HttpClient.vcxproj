@@ -19,12 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\HttpClient\delete.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\src\HttpClient\ConnectionParameters.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpClient.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpClientParameters.h" />
+    <ClInclude Include="..\..\src\HttpClient\HttpResponsePopulator.h" />
+    <ClInclude Include="..\..\src\HttpClient\HttpResponseStreamParser.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

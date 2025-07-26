@@ -5,6 +5,8 @@
 #include "ConnectionParameters.h"
 #include "../Common/HttpRequest.h"
 #include "../Common/HttpResponse.h"
+#include "HttpResponsePopulator.h"
+#include "HttpResponseStreamParser.h"
 
 class HttpClient : public std::enable_shared_from_this<HttpClient>
 {
@@ -76,7 +78,8 @@ protected:
 		:
 		m_parameters(std::move(parameters)),
 		m_resolver(m_parameters.m_executor),
-		m_socket(m_parameters.m_executor)
+		m_socket(m_parameters.m_executor),
+		m_parser(&m_populator)
 	{
 
 	}
@@ -84,7 +87,7 @@ protected:
 	template<typename Callable>
 	void ReadResponseAsync(boost::asio::ip::tcp::socket& socket, Callable callable)
 	{
-		boost::asio::async_read_until(socket, m_response, "\r\n\r\n", 
+		boost::asio::async_read_until(socket, m_response, m_parser, 
 			[sharedThis = this->shared_from_this(), callable = std::move(callable), this]
 			(boost::system::error_code err, size_t byteContt) mutable
 			{
@@ -128,4 +131,6 @@ protected:
 	boost::asio::ip::tcp::socket m_socket;
 	boost::asio::streambuf m_request;
 	boost::asio::streambuf m_response;
+	HttpResponsePopulator m_populator;
+	HttpResponseStreamParser m_parser;
 };
