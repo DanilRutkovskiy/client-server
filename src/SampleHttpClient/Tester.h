@@ -50,7 +50,8 @@ public:
 
 						std::cout << "Request succeeded. \n"
 							"Response code: " << response.m_statusCode << std::endl <<
-							"Response body: " << response.m_body << std::endl;
+							"Response body: " << response.m_body << std::endl <<
+							"Response data: " << response.m_data << std::endl;
 					});
 			});
 

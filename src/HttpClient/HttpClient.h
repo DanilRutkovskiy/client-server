@@ -57,7 +57,8 @@ public:
 	template<typename Callable>
 	void SendAsync(const std::string& hhtpMessage, Callable callable)
 	{
-		SendMessageThroughSocket(m_socket, hhtpMessage, std::move(callable));
+		ReadResponseAsync(m_socket, std::move(callable));
+		SendMessageAsync(m_socket, hhtpMessage);
 		/*
 		post(m_parameters.m_executor, 
 			[callable = std::move(callable), sharedThis = this->shared_from_this(), this]() mutable
@@ -81,17 +82,34 @@ protected:
 	}
 
 	template<typename Callable>
-	void SendMessageThroughSocket(boost::asio::ip::tcp::socket& socket, const std::string& content, Callable callable)
+	void ReadResponseAsync(boost::asio::ip::tcp::socket& socket, Callable callable)
+	{
+		boost::asio::async_read_until(socket, m_response, "\r\n\r\n", 
+			[sharedThis = this->shared_from_this(), callable = std::move(callable), this]
+			(boost::system::error_code err, size_t byteContt) mutable
+			{
+				if (err)
+				{
+					callable(err, HttpResponse{});
+				}
+				std::string data{ std::istreambuf_iterator<char>(&m_response), std::istreambuf_iterator<char>() };
+
+				HttpResponse response;
+				response.m_data = std::move(data);
+				callable(std::error_code{}, std::move(response));
+			});
+	}
+
+	void SendMessageAsync(boost::asio::ip::tcp::socket& socket, const std::string& content)
 	{
 		std::ostream os(&m_request);
 		os << content;
 
 		boost::asio::async_write(socket, m_request, 
-			[callable = std::move(callable)]
+			[sharedThis = this->shared_from_this()]
 			(boost::system::error_code err, std::size_t bytes_transfered)
 			{
-				HttpResponse response;
-				callable(err, response);
+				//TODO handle error here
 			});
 	}
 
@@ -109,5 +127,5 @@ protected:
 	boost::asio::ip::tcp::resolver m_resolver;
 	boost::asio::ip::tcp::socket m_socket;
 	boost::asio::streambuf m_request;
-
+	boost::asio::streambuf m_response;
 };
