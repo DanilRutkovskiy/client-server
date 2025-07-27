@@ -22,6 +22,7 @@
     <ClInclude Include="..\..\src\HttpClient\ConnectionParameters.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpClient.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpClientParameters.h" />
+    <ClInclude Include="..\..\src\HttpClient\HttpHeaderParser.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpResponsePopulator.h" />
     <ClInclude Include="..\..\src\HttpClient\HttpResponseStreamParser.h" />
   </ItemGroup>

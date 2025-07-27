@@ -3,6 +3,8 @@
 #include <boost/asio.hpp>
 #include <utility>
 #include <algorithm>
+#include "../Common/HttpHeader.h"
+#include "HttpHeaderParser.h"
 
 enum class ParserState
 {
@@ -22,9 +24,9 @@ struct HttpResponsePopulator
 
 	std::string m_buffer;
 	std::string m_delimiter = "\r\n\r\n";
-	std::string m_headerData;
+	HttpHeader m_headerData;
 
-	const std::string& ReadHeaderData()
+	HttpHeader ReadHeaderData()
 	{
 		return m_headerData;
 	}
@@ -47,17 +49,13 @@ struct HttpResponsePopulator
 				return std::make_pair(end, notDone);
 			}
 
-			m_headerData.insert(m_headerData.end(), std::begin(m_buffer), loc );
+			std::string headerData;
+			headerData.insert(headerData.end(), std::begin(m_buffer), loc );
+			m_headerData = HttpHeaderParser{}(headerData);
 			//ReadHeader(headerData);
 			return std::make_pair(begin, done);
 		}
 		//never reach here
 		return std::make_pair(end, done);
-	}
-	/*
-	HttpHeader ReadHeader(std::string& headerData)
-	{
-
-	}
-	*/
+	} 
 };

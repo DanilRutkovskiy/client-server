@@ -51,7 +51,12 @@ public:
 						std::cout << "Request succeeded. \n"
 							"Response code: " << response.m_statusCode << std::endl <<
 							"Response body: " << response.m_body << std::endl <<
-							"Response data: " << response.m_data << std::endl;
+							"Response data: " << std::endl;
+
+						for (const auto& startLinePart : response.m_header.m_startLine.parts)
+						{
+							std::cout << startLinePart << " - ";
+						}
 					});
 			});
 
