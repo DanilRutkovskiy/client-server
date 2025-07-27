@@ -8,7 +8,7 @@ struct HttpHeaderParser
 	HttpHeader operator()(const std::string& data)
 	{
 		std::vector<std::string> lines;
-		boost::split(lines, data, boost::is_any_of("\r\n"));
+		boost::split(lines, data, boost::is_any_of("\r\n"), boost::token_compress_on);
 		if (lines.empty())
 		{
 			return {};
@@ -23,9 +23,34 @@ struct HttpHeaderParser
 
 		for (const auto& line : lines)
 		{
-
+			if (line.empty())
+			{
+				continue;
+			}
+			httpHeader.Add(ParseHeaderLine(line));
 		}
 
 		return httpHeader;
+	}
+
+	HeaderField ParseHeaderLine(const std::string& line)
+	{
+		HeaderField headerField;
+
+		auto loc = std::find(std::begin(line), std::end(line), ':');
+		if (loc == std::end(line))
+		{
+			headerField.m_name = line;
+		}
+		else
+		{
+			headerField.m_name = std::string{ std::begin(line), loc };
+			headerField.m_value = std::string{ ++loc, end(line) };
+		}
+
+		boost::algorithm::trim(headerField.m_name);
+		boost::algorithm::trim(headerField.m_value);
+
+		return headerField;
 	}
 };

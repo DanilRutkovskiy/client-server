@@ -53,12 +53,26 @@ public:
 							"Response body: " << response.m_body << std::endl <<
 							"Response data: " << std::endl;
 
-						for (const auto& startLinePart : response.m_header.m_startLine.parts)
-						{
-							std::cout << startLinePart << " - ";
-						}
+						Print(response);
 					});
 			});
 
+	}
+
+	static void Print(const HttpResponse& response)
+	{
+		for (const auto& startLinePart : response.m_header.m_startLine.parts)
+		{
+			std::cout << startLinePart << " - ";
+		}
+
+		std::cout << std::endl;
+
+		for (const auto& header : response.m_header.m_headers)
+		{
+			std::cout << header.m_name << ": " << header.m_value << std::endl;
+		}
+
+		std::cout << std::endl;
 	}
 };
