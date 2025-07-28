@@ -9,7 +9,15 @@
 enum class ParserState
 {
 	WAITING_FOR_HEADERS,
+	WAITING_FOR_BODY,
 	DONE
+};
+
+enum class TransferMethod
+{
+	NONE,
+	CONTENT_LENGTH,
+	CHUNKED
 };
 
 struct HttpResponsePopulator
@@ -25,6 +33,7 @@ struct HttpResponsePopulator
 	std::string m_buffer;
 	std::string m_delimiter = "\r\n\r\n";
 	HttpHeader m_headerData;
+	TransferMethod m_transferMethod = TransferMethod::NONE;
 
 	HttpHeader ReadHeaderData()
 	{
@@ -49,10 +58,31 @@ struct HttpResponsePopulator
 				return std::make_pair(end, notDone);
 			}
 
-			std::string headerData;
-			headerData.insert(headerData.end(), std::begin(m_buffer), loc );
-			m_headerData = HttpHeaderParser{}(headerData);
-			//ReadHeader(headerData);
+			std::string headerData{ std::begin(m_buffer), loc };
+
+			auto possibleHeader = HttpHeaderParser{}(headerData);
+			if (!possibleHeader.first)
+			{
+				m_state = ParserState::DONE;
+				return std::make_pair(end, done);
+			}
+
+			m_transferMethod = DetermineTransferMethod();
+			if (m_transferMethod == TransferMethod::NONE)
+			{
+				m_state = ParserState::DONE;
+				return std::make_pair(end, done);
+			}
+
+			if (m_transferMethod == TransferMethod::CHUNKED)
+			{
+				//TODO: support chunked transfer
+				m_state = ParserState::DONE;
+				return std::make_pair(end, done);
+			}
+
+			m_state = ParserState::WAITING_FOR_BODY;
+
 			return std::make_pair(begin, done);
 		}
 		//never reach here
