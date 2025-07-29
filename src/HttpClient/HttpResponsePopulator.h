@@ -87,5 +87,22 @@ struct HttpResponsePopulator
 		}
 		//never reach here
 		return std::make_pair(end, done);
-	} 
+	}
+
+	TransferMethod DetermineTransferMethod(const HttpHeader& header)
+	{
+		const auto encoding = header.Get("Transfer-Encoding");
+		if (encoding && encoding->m_value == "chunked")
+		{
+			return TransferMethod::CHUNKED;
+		}
+
+		const auto contentLength = header.Get("Content-Length");
+		if (contentLength && !contentLength->m_value.empty())
+		{
+			return TransferMethod::CONTENT_LENGTH;
+		}
+
+		return TransferMethod::NONE;
+	}
 };
