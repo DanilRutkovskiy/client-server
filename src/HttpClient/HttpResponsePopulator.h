@@ -32,12 +32,12 @@ struct HttpResponsePopulator
 
 	std::string m_buffer;
 	std::string m_delimiter = "\r\n\r\n";
-	HttpHeader m_headerData;
+	HttpResponse m_httpResponse;
 	TransferMethod m_transferMethod = TransferMethod::NONE;
 
-	HttpHeader ReadHeaderData()
+	HttpResponse& ResponseData()
 	{
-		return m_headerData;
+		return m_httpResponse;
 	}
 
 	template <typename Iterator>
@@ -67,7 +67,9 @@ struct HttpResponsePopulator
 				return std::make_pair(end, done);
 			}
 
-			m_transferMethod = DetermineTransferMethod();
+			m_httpResponse.m_header = std::move(possibleHeader.second);
+
+			m_transferMethod = DetermineTransferMethod(m_httpResponse.m_header);
 			if (m_transferMethod == TransferMethod::NONE)
 			{
 				m_state = ParserState::DONE;
@@ -83,15 +85,29 @@ struct HttpResponsePopulator
 
 			m_state = ParserState::WAITING_FOR_BODY;
 
+			const auto bodySize = std::stoi(m_httpResponse.m_header.Get("Content-Length")->m_value);
+			const auto expectedMessageSize = headerData.size() + bodySize + m_delimiter.size();
+			if (expectedMessageSize > m_buffer.size())
+			{
+				return std::make_pair(end, notDone);
+			}
+
+			auto beginOfBody = std::begin(m_buffer) + headerData.size() + m_delimiter.size();
+			auto endOfBody = std::begin(m_buffer) + expectedMessageSize;
+
+			m_httpResponse.m_body = std::string{ beginOfBody, endOfBody };
+
+			m_state = ParserState::DONE;
+
 			return std::make_pair(begin, done);
 		}
 		//never reach here
 		return std::make_pair(end, done);
 	}
 
-	TransferMethod DetermineTransferMethod(const HttpHeader& header)
+	TransferMethod DetermineTransferMethod(HttpHeader& header)
 	{
-		const auto encoding = header.Get("Transfer-Encoding");
+		auto encoding = header.Get("Transfer-Encoding");
 		if (encoding && encoding->m_value == "chunked")
 		{
 			return TransferMethod::CHUNKED;

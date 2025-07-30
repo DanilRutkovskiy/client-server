@@ -97,8 +97,7 @@ protected:
 				}
 				std::string data{ std::istreambuf_iterator<char>(&m_response), std::istreambuf_iterator<char>() };
 
-				HttpResponse response;
-				response.m_header = m_populator.ReadHeaderData();
+				HttpResponse response = m_populator.ResponseData();
 
 				callable(std::error_code{}, std::move(response));
 			});
