@@ -35,7 +35,6 @@ public:
 				}
 				std::cout << "ConnectAsync success" << std::endl;
 
-				HttpRequest request;
 				std::string message = 
 					"GET /get HTTP/1.1\r\n"
 					"Host: httpbin.org\r\n"
@@ -48,10 +47,7 @@ public:
 							return;
 						}
 
-						std::cout << "Request succeeded. \n"
-							"Response code: " << response.m_statusCode << std::endl <<
-							"Response body: " << response.m_body << std::endl <<
-							"Response data: " << std::endl;
+						std::cout << "Request succeeded.\n\n";
 
 						Print(response);
 					});
@@ -63,7 +59,7 @@ public:
 	{
 		for (const auto& startLinePart : response.m_header.m_startLine.parts)
 		{
-			std::cout << startLinePart << " - ";
+			std::cout << startLinePart << " ";
 		}
 
 		std::cout << std::endl;
@@ -74,5 +70,7 @@ public:
 		}
 
 		std::cout << std::endl;
+
+		std::cout << "body: \n" << response.m_body << std::endl;
 	}
 };

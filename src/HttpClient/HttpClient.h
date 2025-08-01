@@ -95,11 +95,9 @@ protected:
 				{
 					callable(err, HttpResponse{});
 				}
-				std::string data{ std::istreambuf_iterator<char>(&m_response), std::istreambuf_iterator<char>() };
+				//std::string data{ std::istreambuf_iterator<char>(&m_response), std::istreambuf_iterator<char>() };
 
-				HttpResponse response = m_populator.ResponseData();
-
-				callable(std::error_code{}, std::move(response));
+				callable(std::error_code{}, m_populator.ResponseData());
 			});
 	}
 

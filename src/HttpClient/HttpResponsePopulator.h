@@ -33,6 +33,8 @@ struct HttpResponsePopulator
 	std::string m_buffer;
 	std::string m_delimiter = "\r\n\r\n";
 	HttpResponse m_httpResponse;
+	size_t m_expectedMessageSize = 0;
+	size_t m_beginningOfBodyIndex = 0;
 	TransferMethod m_transferMethod = TransferMethod::NONE;
 
 	HttpResponse& ResponseData()
@@ -84,21 +86,44 @@ struct HttpResponsePopulator
 			}
 
 			m_state = ParserState::WAITING_FOR_BODY;
+			size_t bodySize = 0;
+			try
+			{
+				bodySize = std::stoi(m_httpResponse.m_header.Get("Content-Length")->m_value);
+			}
+			catch (...)
+			{
+				m_state = ParserState::DONE;
+				return std::make_pair(end, done);
+			}
+			m_expectedMessageSize = headerData.size() + bodySize + m_delimiter.size();
+			m_beginningOfBodyIndex = headerData.size() + m_delimiter.size();
 
-			const auto bodySize = std::stoi(m_httpResponse.m_header.Get("Content-Length")->m_value);
-			const auto expectedMessageSize = headerData.size() + bodySize + m_delimiter.size();
-			if (expectedMessageSize > m_buffer.size())
+			if (m_expectedMessageSize > m_buffer.size())
 			{
 				return std::make_pair(end, notDone);
 			}
 
-			auto beginOfBody = std::begin(m_buffer) + headerData.size() + m_delimiter.size();
-			auto endOfBody = std::begin(m_buffer) + expectedMessageSize;
+			auto beginOfBody = std::begin(m_buffer) + m_beginningOfBodyIndex;
+			auto endOfBody = std::begin(m_buffer) + m_expectedMessageSize;
 
 			m_httpResponse.m_body = std::string{ beginOfBody, endOfBody };
 
 			m_state = ParserState::DONE;
 
+			return std::make_pair(begin, done);
+		}
+		else if (m_state == ParserState::WAITING_FOR_BODY)
+		{
+			if (m_expectedMessageSize > m_buffer.size())
+			{
+				return std::make_pair(begin, notDone);
+			}
+			m_state = ParserState::DONE;
+			auto beginOfBody = std::begin(m_buffer) + m_beginningOfBodyIndex;
+			auto endOfBody = std::begin(m_buffer) + m_expectedMessageSize;
+
+			m_httpResponse.m_body = std::string{ beginOfBody, endOfBody };
 			return std::make_pair(begin, done);
 		}
 		//never reach here
