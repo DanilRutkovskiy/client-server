@@ -23,10 +23,12 @@ public:
 
 		auto client = HttpClient::Make(std::move(parameters));
 
-		auto connectionsParams = makeConnectionParameters("http://httpbin.org");
+		std::string link = "http://httpbin.org/get";
+
+		auto connectionsParams = makeConnectionParameters(link);
 
 		client->ConnectAsync(std::move(connectionsParams),
-			[client](std::error_code err) 
+			[client, link](std::error_code err) 
 			{
 				if (err)
 				{
@@ -35,7 +37,7 @@ public:
 				}
 				std::cout << "ConnectAsync success" << std::endl;
 
-				HttpRequest request = makeGetRequest("http://httpbin.org/get");
+				auto request = makeGetRequest(link);
 
 				client->SendAsync(request, [](std::error_code err, HttpResponse response)
 					{
