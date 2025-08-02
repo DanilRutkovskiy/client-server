@@ -7,6 +7,7 @@
 #include "../Common/HttpResponse.h"
 #include "HttpResponsePopulator.h"
 #include "HttpResponseStreamParser.h"
+#include "../Common/HttpRequestSerializer.h"
 
 class HttpClient : public std::enable_shared_from_this<HttpClient>
 {
@@ -57,22 +58,12 @@ public:
 	}
 
 	template<typename Callable>
-	void SendAsync(const std::string& hhtpMessage, Callable callable)
+	void SendAsync(const HttpRequest& httpRequest, Callable callable)
 	{
 		ReadResponseAsync(m_socket, std::move(callable));
-		SendMessageAsync(m_socket, hhtpMessage);
-		/*
-		post(m_parameters.m_executor, 
-			[callable = std::move(callable), sharedThis = this->shared_from_this(), this]() mutable
-			{
-
-
-				//callable(std::error_code(), std::move(response));
-				DeferDeletion();
-			});
-		*/
+		SendMessageAsync(m_socket, HttpRequestSerializer{ httpRequest }());
 	}
-
+	 
 protected:
 	explicit HttpClient(HttpClientParameters parameters)
 		:

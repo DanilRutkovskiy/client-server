@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\Common\HttpHeader.h" />
     <ClInclude Include="..\..\src\Common\HttpRequest.h" />
+    <ClInclude Include="..\..\src\Common\HttpRequestSerializer.h" />
     <ClInclude Include="..\..\src\Common\HttpResponse.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

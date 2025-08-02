@@ -33,5 +33,8 @@
     <ClInclude Include="..\..\src\HttpClient\HttpHeaderParser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\HttpClient\RequestGenerator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

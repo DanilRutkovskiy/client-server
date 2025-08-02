@@ -24,5 +24,8 @@
     <ClInclude Include="..\..\src\Common\HttpHeader.h">
       <Filter>Исходные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Common\HttpRequestSerializer.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

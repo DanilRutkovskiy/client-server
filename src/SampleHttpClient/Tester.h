@@ -3,12 +3,13 @@
 #include "../HttpClient/HttpClient.h"
 #include "../Common/HttpRequest.h"
 #include "../Common/HttpResponse.h"
+#include "../HttpClient/RequestGenerator.h"
 
 
 class Tester
 {
 	boost::asio::any_io_executor m_executor;
-
+	
 public:
 	explicit Tester(boost::asio::io_context& ioContext)
 		:
@@ -22,10 +23,9 @@ public:
 
 		auto client = HttpClient::Make(std::move(parameters));
 
-		ConnectionParameters connParams;
-		connParams.m_host = "httpbin.org";
-		connParams.m_port = "80";
-		client->ConnectAsync(std::move(connParams), 
+		auto connectionsParams = makeConnectionParameters("http://httpbin.org");
+
+		client->ConnectAsync(std::move(connectionsParams),
 			[client](std::error_code err) 
 			{
 				if (err)
@@ -35,11 +35,9 @@ public:
 				}
 				std::cout << "ConnectAsync success" << std::endl;
 
-				std::string message = 
-					"GET /get HTTP/1.1\r\n"
-					"Host: httpbin.org\r\n"
-					"\r\n";
-				client->SendAsync(message, [](std::error_code err, HttpResponse response)
+				HttpRequest request = makeGetRequest("http://httpbin.org/get");
+
+				client->SendAsync(request, [](std::error_code err, HttpResponse response)
 					{
 						if (err)
 						{
