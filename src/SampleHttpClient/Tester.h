@@ -22,6 +22,7 @@ public:
 	{
 		HttpClientParameters parameters;
 		parameters.m_executor = m_executor;
+		parameters.m_sslContext = PrepareSslContext();
 
 		auto client = HttpClient::Make(std::move(parameters));
 
