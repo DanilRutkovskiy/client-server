@@ -29,7 +29,7 @@ inline std::string GuessPortForScheme(const std::string& scheme)
 
 inline ConnectionParameters makeConnectionParameters(const std::string& link)
 {
-	auto parsedLink = boost::urls::parse_uri("http://httpbin.org:80");
+	auto parsedLink = boost::urls::parse_uri(link);
 	ConnectionParameters params;
 	params.m_host = parsedLink->host_address();
 	params.m_port = parsedLink->port();

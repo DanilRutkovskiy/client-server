@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpClient", "HttpClient\Ht
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{BFAB3B26-BA77-4714-8097-04E2F3C99DE5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpClientUnitTest", "..\src\HttpClientUnitTest\HttpClientUnitTest.vcxproj", "{3033A395-98BF-40B9-942D-D40F740D7C5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -53,6 +55,14 @@ Global
 		{BFAB3B26-BA77-4714-8097-04E2F3C99DE5}.Release|x64.Build.0 = Release|x64
 		{BFAB3B26-BA77-4714-8097-04E2F3C99DE5}.Release|x86.ActiveCfg = Release|Win32
 		{BFAB3B26-BA77-4714-8097-04E2F3C99DE5}.Release|x86.Build.0 = Release|Win32
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Debug|x64.ActiveCfg = Debug|x64
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Debug|x64.Build.0 = Debug|x64
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Debug|x86.ActiveCfg = Debug|Win32
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Debug|x86.Build.0 = Debug|Win32
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Release|x64.ActiveCfg = Release|x64
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Release|x64.Build.0 = Release|x64
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Release|x86.ActiveCfg = Release|Win32
+		{3033A395-98BF-40B9-942D-D40F740D7C5C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +70,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{8F263C5A-CFC5-4094-8562-CF829D3E6E80} = {53D03AD2-A1CB-4C62-9370-B360DC56AE52}
 		{8696D5EA-2401-4316-9901-A78903D2F7A8} = {53D03AD2-A1CB-4C62-9370-B360DC56AE52}
+		{3033A395-98BF-40B9-942D-D40F740D7C5C} = {53D03AD2-A1CB-4C62-9370-B360DC56AE52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0767F345-4135-4CFA-BBC4-01642D281195}
