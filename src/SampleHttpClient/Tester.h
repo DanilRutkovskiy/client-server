@@ -1,5 +1,7 @@
 #pragma once
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <memory>
 #include "../HttpClient/HttpClient.h"
 #include "../Common/HttpRequest.h"
 #include "../Common/HttpResponse.h"
@@ -53,6 +55,18 @@ public:
 					});
 			});
 
+	}
+
+	std::shared_ptr<boost::asio::ssl::context> PrepareSslContext()
+	{
+		using namespace boost::asio::ssl;
+		auto sslContext = std::make_shared<context>(context::tlsv13);
+		sslContext->set_verify_mode(verify_peer);
+		sslContext->set_verify_callback([](bool preverified, verify_context& verifyContext) 
+			{
+				return preverified;
+			});
+		return sslContext;
 	}
 
 	static void Print(const HttpResponse& response)
