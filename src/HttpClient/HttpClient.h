@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <boost/asio/ssl.hpp>
+
 #include "HttpClientParameters.h"
 #include "ConnectionParameters.h"
 #include "../Common/HttpRequest.h"
@@ -20,10 +22,12 @@ public:
 	template<typename Callable>
 	void ConnectAsync(ConnectionParameters connectionParams, Callable callable)
 	{
+		m_useTls = connectionParams.m_useTls;
+
 		m_resolver.async_resolve	
 		(
 			connectionParams.m_host, connectionParams.m_port,
-			[callable = std::move(callable), sharedThis = this->shared_from_this(), this]
+			[callable = std::move(callable), sharedThis = this->shared_from_this(), this, host = connectionParams.m_host]
 			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
 				if (err)
@@ -34,25 +38,54 @@ public:
 					return;
 				}
 
-				boost::asio::ip::tcp::socket& socket = sharedThis->m_socket;
-				boost::asio::async_connect(socket, endpoints,
-					[callable = std::move(callable), sharedThis = std::move(sharedThis), this]
-					(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
+				if (m_useTls)
+				{
+					if (!SSL_set_tlsext_host_name(m_tlsSocket->native_handle(), host.c_str()))
 					{
-						if (err)
+						callable(std::make_error_code(static_cast<std::errc>(static_cast<int>(::ERR_get_error()))));
+						return;
+					}
+
+					auto& socket = sharedThis->m_tlsSocket;
+					boost::asio::async_connect(socket->lowest_layer(), endpoints,
+						[callable = std::move(callable), sharedThis = std::move(sharedThis), this]
+						(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
 						{
-							std::cout << "connect error occured: " << err.message() << std::endl;
-							callable(err);
+							if (err)
+							{
+								std::cout << "connect error occured: " << err.message() << std::endl;
+								callable(err);
+								DeferDeletion();
+							}
+
+							m_tlsSocket->async_handshake(boost::asio::ssl::stream_base::client, 
+								[callable = std::move(callable), this](boost::system::error_code err)
+								{
+									callable(err);
+									DeferDeletion();
+								});
+
 							DeferDeletion();
+						});
+				}
+				else
+				{
+					auto& socket = sharedThis->m_socket;
+					boost::asio::async_connect(socket, endpoints,
+						[callable = std::move(callable), sharedThis = std::move(sharedThis), this]
+						(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
+						{
+							if (err)
+							{
+								std::cout << "connect error occured: " << err.message() << std::endl;
+								callable(err);
+								DeferDeletion();
+							}
 
-						}
-
-						callable(std::error_code{});
-						DeferDeletion();
-					});
-
-				//std::cout << "successfully resolved" << std::endl;
-				//callable(std::error_code());
+							callable(std::error_code{});
+							DeferDeletion();
+						});
+				}
 			}
 		);
 	}
@@ -72,7 +105,15 @@ protected:
 		m_socket(m_parameters.m_executor),
 		m_parser(&m_populator)
 	{
-
+		if (m_parameters.m_sslContext)
+		{
+			using namespace boost::asio;
+			m_tlsSocket = std::make_shared<ssl::stream<ip::tcp::socket>>
+				(
+					m_parameters.m_executor,
+					*m_parameters.m_sslContext
+				);
+		}
 	}
 
 	template<typename Callable>
@@ -118,8 +159,10 @@ protected:
 	HttpClientParameters m_parameters;
 	boost::asio::ip::tcp::resolver m_resolver;
 	boost::asio::ip::tcp::socket m_socket;
+	std::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> m_tlsSocket;
 	boost::asio::streambuf m_request;
 	boost::asio::streambuf m_response;
 	HttpResponsePopulator m_populator;
 	HttpResponseStreamParser m_parser;
+	bool m_useTls = false;
 };

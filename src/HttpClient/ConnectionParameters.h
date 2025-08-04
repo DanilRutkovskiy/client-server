@@ -2,18 +2,20 @@
 #include <string>
 #include <boost/url.hpp>
 
-class ConnectionParameters
+struct ConnectionParameters
 {
-public:
 	std::string m_host;
 	std::string m_port;
+	bool m_useTls = false;
 };
 
 inline std::string GuessPortForScheme(const std::string& scheme)
 {
-	static std::vector<std::pair<std::string, std::string>> mapping{
+	static std::vector<std::pair<std::string, std::string>> mapping
+	{
 		{ "http", "80" },
-		{ "https", "443" }
+		{ "https", "443" },
+		{ "ssl", "443" },
 	};
 
 	auto loc = std::find_if(std::begin(mapping), std::end(mapping),
@@ -27,6 +29,26 @@ inline std::string GuessPortForScheme(const std::string& scheme)
 	return "";
 }
 
+inline bool GuessTlsNeed(const std::string& scheme)
+{
+	static std::vector<std::pair<std::string, bool>> mapping
+	{
+		{ "http", false },
+		{ "https", true },
+		{ "ssl", true },
+	};
+
+	auto loc = std::find_if(std::begin(mapping), std::end(mapping),
+		[&scheme](auto item) { return item.first == scheme; });
+
+	if (loc != std::end(mapping))
+	{
+		return (*loc).second;
+	}
+
+	return false;
+}
+
 inline ConnectionParameters makeConnectionParameters(const std::string& link)
 {
 	auto parsedLink = boost::urls::parse_uri(link);
@@ -38,6 +60,8 @@ inline ConnectionParameters makeConnectionParameters(const std::string& link)
 	{
 		params.m_port = GuessPortForScheme(parsedLink->scheme());
 	}
+
+	params.m_useTls = GuessTlsNeed(parsedLink->scheme());
 
 	return params;
 }
