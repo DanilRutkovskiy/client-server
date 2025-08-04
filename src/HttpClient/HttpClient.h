@@ -93,8 +93,8 @@ public:
 	template<typename Callable>
 	void SendAsync(const HttpRequest& httpRequest, Callable callable)
 	{
-		ReadResponseAsync(m_socket, std::move(callable));
-		SendMessageAsync(m_socket, HttpRequestSerializer{ httpRequest }());
+		ReadResponseAsync(std::move(callable));
+		SendMessageAsync(HttpRequestSerializer{ httpRequest }());
 	}
 	 
 protected:
@@ -115,9 +115,22 @@ protected:
 				);
 		}
 	}
+	 
+	template <typename Callable>
+	void ReadResponseAsync(Callable callable)
+	{
+		if (m_useTls && m_tlsSocket)
+		{
+			ReadResponseAsyncImpl(*m_tlsSocket, std::move(callable));
+		}
+		else
+		{
+			ReadResponseAsyncImpl(m_socket, std::move(callable));
+		}
+	}
 
-	template<typename Callable>
-	void ReadResponseAsync(boost::asio::ip::tcp::socket& socket, Callable callable)
+	template<typename SocketType, typename Callable >
+	void ReadResponseAsyncImpl(SocketType& socket, Callable callable)
 	{
 		boost::asio::async_read_until(socket, m_response, m_parser, 
 			[sharedThis = this->shared_from_this(), callable = std::move(callable), this]
@@ -127,22 +140,36 @@ protected:
 				{
 					callable(err, HttpResponse{});
 				}
-				//std::string data{ std::istreambuf_iterator<char>(&m_response), std::istreambuf_iterator<char>() };
 
 				callable(std::error_code{}, m_populator.ResponseData());
+				DeferDeletion();
 			});
 	}
 
-	void SendMessageAsync(boost::asio::ip::tcp::socket& socket, const std::string& content)
+	void SendMessageAsync(const std::string& content)
+	{
+		if (m_useTls && m_tlsSocket)
+		{
+			SendMessageAsyncImpl(*m_tlsSocket, content);
+		}
+		else
+		{
+			SendMessageAsyncImpl(m_socket, content);
+		}
+	}
+
+	template<typename SocketType>
+	void SendMessageAsyncImpl(SocketType& socket, const std::string& content)
 	{
 		std::ostream os(&m_request);
 		os << content;
 
-		boost::asio::async_write(socket, m_request, 
+		boost::asio::async_write(socket, m_request,
 			[sharedThis = this->shared_from_this()]
 			(boost::system::error_code err, std::size_t bytes_transfered)
 			{
 				//TODO handle error here
+				std::cout << "written: " << err.message() << std::endl;
 			});
 	}
 
