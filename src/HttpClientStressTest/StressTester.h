@@ -11,14 +11,71 @@
 class StressTester
 {
 	boost::asio::any_io_executor m_executor;
+	std::shared_ptr<boost::asio::ssl::context> m_sslContext;
 	
 public:
-	explicit StressTester(boost::asio::io_context& ioContext)
+	explicit StressTester(boost::asio::io_context& ioContext, 
+		const std::shared_ptr<boost::asio::ssl::context>& sslContext)
 		:
-		m_executor( ioContext.get_executor() )
+		m_executor{ ioContext.get_executor() },
+		m_sslContext{ sslContext }
 	{}
 	
 	void operator()()
 	{
+		HttpClientParameters parameters;
+		parameters.m_executor = m_executor;
+		parameters.m_sslContext = m_sslContext;
+
+		auto client = HttpClient::Make(std::move(parameters));
+
+		std::string link = "http://localhost/a.txt";
+
+		auto connectionsParams = makeConnectionParameters(link);
+
+		client->ConnectAsync(std::move(connectionsParams),
+			[client, link, this](std::error_code err)
+			{
+				if (err)
+				{
+					std::cout << "ConnectAsync error occured: " << err.message() << std::endl;
+					return;
+				}
+				std::cout << "ConnectAsync success" << std::endl;
+
+				auto request = makeGetRequest(link);
+
+				client->SendAsync(request, 
+					[this](std::error_code err, HttpResponse response)
+					{
+						if (err)
+						{
+							std::cout << "error occured: " << err.message() << std::endl;
+							return;
+						}
+
+						std::cout << "Request succeeded.\n\n";
+
+						auto valid = Validate(response);
+						if (valid)
+						{
+							std::cout << "Request succeded\n";
+						}
+						else
+						{
+							std::cout << "Request failed\n";
+						}
+					});
+			});
+	}
+
+	bool Validate(const HttpResponse& response)
+	{
+		if (response.m_statusCode == 200)
+		{
+			return true;
+		}
+
+		return false;
 	}
 };
