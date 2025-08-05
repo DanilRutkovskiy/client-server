@@ -78,6 +78,14 @@ public:
 			throw ("can't set cipher list");
 		}
 
+		auto options = context::default_workarounds | 
+					   context::no_sslv2 | 
+					   context::no_sslv3 |
+					   context::no_tlsv1 | 
+					   context::no_tlsv1_1;
+
+		sslContext->set_options(options);
+
 		return sslContext;
 	}
 
