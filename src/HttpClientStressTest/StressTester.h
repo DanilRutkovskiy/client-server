@@ -12,16 +12,27 @@ class StressTester
 {
 	boost::asio::any_io_executor m_executor;
 	std::shared_ptr<boost::asio::ssl::context> m_sslContext;
+	int m_concurrency = 0;
 	
 public:
 	explicit StressTester(boost::asio::io_context& ioContext, 
-		const std::shared_ptr<boost::asio::ssl::context>& sslContext)
+		const std::shared_ptr<boost::asio::ssl::context>& sslContext,
+		int concurrency)
 		:
 		m_executor{ ioContext.get_executor() },
-		m_sslContext{ sslContext }
+		m_sslContext{ sslContext },
+		m_concurrency{ concurrency }
 	{}
-	
+
 	void operator()()
+	{
+		for (int i = 0; i < m_concurrency; ++i)
+		{
+			Start();
+		}
+	}
+	
+	void Start()
 	{
 		HttpClientParameters parameters;
 		parameters.m_executor = m_executor;
@@ -29,7 +40,7 @@ public:
 
 		auto client = HttpClient::Make(std::move(parameters));
 
-		std::string link = "http://localhost/a.txt";
+		std::string link = "http://127.0.0.1/a.txt";
 
 		auto connectionsParams = makeConnectionParameters(link);
 
@@ -54,8 +65,6 @@ public:
 							return;
 						}
 
-						std::cout << "Request succeeded.\n\n";
-
 						auto valid = Validate(response);
 						if (valid)
 						{
@@ -71,7 +80,7 @@ public:
 
 	bool Validate(const HttpResponse& response)
 	{
-		if (response.m_statusCode == 200)
+		if (response.GetStatusCode() == 200)
 		{
 			return true;
 		}

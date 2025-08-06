@@ -4,11 +4,10 @@
 
 struct HttpResponse
 {
-	int m_statusCode = 400;
 	std::string m_body;
 	HttpHeader m_header;
 
-	int GetStatusCode()
+	int GetStatusCode() const
 	{
 		if (m_header.m_startLine.parts.size() < 2)
 		{
