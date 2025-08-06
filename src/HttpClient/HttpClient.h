@@ -169,7 +169,6 @@ protected:
 			(boost::system::error_code err, std::size_t bytes_transfered)
 			{
 				//TODO handle error here
-				std::cout << "written: " << err.message() << std::endl;
 			});
 	}
 

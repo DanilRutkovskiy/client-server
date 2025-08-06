@@ -13,6 +13,10 @@ class StressTester
 	boost::asio::any_io_executor m_executor;
 	std::shared_ptr<boost::asio::ssl::context> m_sslContext;
 	int m_concurrency = 0;
+
+public:
+	std::atomic<int> m_succededCount = 0;
+	std::atomic<int> m_failedCount = 0;
 	
 public:
 	explicit StressTester(boost::asio::io_context& ioContext, 
@@ -49,6 +53,7 @@ public:
 			{
 				if (err)
 				{
+					++m_failedCount;
 					std::cout << "ConnectAsync error occured: " << err.message() << std::endl;
 					return;
 				}
@@ -61,6 +66,7 @@ public:
 					{
 						if (err)
 						{
+							++m_failedCount;
 							std::cout << "error occured: " << err.message() << std::endl;
 							return;
 						}
@@ -68,14 +74,21 @@ public:
 						auto valid = Validate(response);
 						if (valid)
 						{
-							std::cout << "Request succeded\n";
+							++m_succededCount;
 						}
 						else
 						{
-							std::cout << "Request failed\n";
+							++m_failedCount;
 						}
 					});
 			});
+	}
+
+	void PrintResult()
+	{
+		std::cout
+			<< "succeded count: " << m_succededCount << std::endl
+			<< "failed count: " << m_failedCount << std::endl;
 	}
 
 	bool Validate(const HttpResponse& response)

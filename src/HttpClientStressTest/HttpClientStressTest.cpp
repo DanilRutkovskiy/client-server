@@ -37,6 +37,7 @@ std::shared_ptr<boost::asio::ssl::context> PrepareSslContext()
 void test()
 {
 	int concurrency = 500;
+	int numberOfThreads = 2000;
 
 	boost::asio::io_context ioContext;
 	std::cout << "started" << std::endl;
@@ -47,24 +48,31 @@ void test()
 		StressTester tester(ioContext, sslContext, concurrency);
 		tester();
 
-		std::jthread th([&ioContext]()
-			{
-				try
+		for (int i = 0; i < numberOfThreads; i++)
+		{
+			std::jthread th([&ioContext]()
 				{
-					ioContext.run();
-					std::cout << "ioContext is out of work" << std::endl;
-				}
-				catch (const std::exception& ex)
-				{
-					std::cout << "exception: " << ex.what() << std::endl;
-				}
-				catch (...)
-				{
-					std::cout << "unknown error" << std::endl;
-				}
-			});
+					try
+					{
+						ioContext.run();
+					}
+					catch (const std::exception& ex)
+					{
+						std::cout << "exception: " << ex.what() << std::endl;
+					}
+					catch (...)
+					{
+						std::cout << "unknown error" << std::endl;
+					}
+				});
+
+			th.detach();
+		}
+
 		std::cout << "Press enter to stop the app" << std::endl;
 		std::cin.get();
+
+		tester.PrintResult();
 
 		workGuard.reset();
 		ioContext.stop();
