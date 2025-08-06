@@ -22,32 +22,45 @@ public:
 	template<typename Callable>
 	void ConnectAsync(ConnectionParameters connectionParams, Callable callable)
 	{
+		auto self = shared_from_this();
 		m_useTls = connectionParams.m_useTls;
 
 		m_resolver.async_resolve	
 		(
 			connectionParams.m_host, connectionParams.m_port,
-			[callable = std::move(callable), this, host = connectionParams.m_host]
+			[
+				callable = std::move(callable), 
+				self,
+				host = connectionParams.m_host, 
+				useTls = m_useTls
+			]
 			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
-				if (err)
+				try
 				{
-					std::cout << "resolve error oocured: " << err.message() << std::endl;
-					callable(err);
-					DeferDeletion();
-					return;
-				}
+					if (err)
+					{
+						std::cerr << "resolve error occured: " << err.message() << std::endl;
+						callable(err);
+						self->DeferDeletion();
+						return;
+					}
 
-				if (m_useTls)
-				{
-					onTlsResolve(host, endpoints, std::move(callable));
-				}
-				else
-				{
-					onResolve(endpoints, std::move(callable));
-				}
+					if (useTls)
+					{
+						self->tlsConnect(host, endpoints, std::move(callable));
+					}
+					else
+					{
+						self->connect(endpoints, std::move(callable));
+					}
 
-				DeferDeletion();
+				}
+				catch (...)
+				{
+					std::cerr << "Unhandled exception in ConnectAsync" << std::endl;
+					self->DeferDeletion();
+				}
 			}
 		);
 	}
@@ -150,7 +163,7 @@ private:
 	}
 
 	template<typename Callable>
-	void onTlsResolve(const std::string& host, const boost::asio::ip::tcp::resolver::results_type& endpoints, Callable callable)
+	void tlsConnect(const std::string& host, const boost::asio::ip::tcp::resolver::results_type& endpoints, Callable callable)
 	{
 		if (!SSL_set_tlsext_host_name(m_tlsSocket->native_handle(), host.c_str()))
 		{
@@ -182,7 +195,7 @@ private:
 	}
 
 	template<typename Callable>
-	void onResolve(const boost::asio::ip::tcp::resolver::results_type& endpoints, Callable callable)
+	void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints, Callable callable)
 	{
 		boost::asio::async_connect(m_socket, endpoints,
 			[callable = std::move(callable), this]

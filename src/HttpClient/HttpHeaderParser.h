@@ -19,7 +19,7 @@ struct HttpHeaderParser
 
 		HttpHeader httpHeader;
 		boost::split(httpHeader.m_startLine.parts, startLine, boost::is_any_of(" "));
-		if (httpHeader.m_startLine.parts.size() < 3)//TODO change 3 to somethif else
+		if (httpHeader.m_startLine.parts.size() < 3)//TODO change 3 to something else
 		{
 			return std::make_pair(false, HttpHeader{});
 		}
