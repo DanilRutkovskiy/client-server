@@ -129,23 +129,6 @@ protected:
 		}
 	}
 
-	template<typename SocketType, typename Callable >
-	void ReadResponseAsyncImpl(SocketType& socket, Callable callable)
-	{
-		boost::asio::async_read_until(socket, m_response, m_parser, 
-			[sharedThis = this->shared_from_this(), callable = std::move(callable), this]
-			(boost::system::error_code err, size_t byteContt) mutable
-			{
-				if (err)
-				{
-					callable(err, HttpResponse{});
-				}
-
-				callable(std::error_code{}, m_populator.ResponseData());
-				DeferDeletion();
-			});
-	}
-
 	void SendMessageAsync(const std::string& content)
 	{
 		if (m_useTls && m_tlsSocket)
@@ -158,6 +141,7 @@ protected:
 		}
 	}
 
+private:
 	template<typename SocketType>
 	void SendMessageAsyncImpl(SocketType& socket, const std::string& content)
 	{
@@ -168,10 +152,32 @@ protected:
 			[sharedThis = this->shared_from_this()]
 			(boost::system::error_code err, std::size_t bytes_transfered)
 			{
-				//TODO handle error here
+				if (err)
+				{
+					std::cout << "error after send message: " << err.what() << std::endl;
+				}
 			});
 	}
+	
+	template<typename SocketType, typename Callable>
+	void ReadResponseAsyncImpl(SocketType& socket, Callable callable)
+	{
+		boost::asio::async_read_until(socket, m_response, m_parser,
+			[sharedThis = this->shared_from_this(), callable = std::move(callable), this]
+			(boost::system::error_code err, size_t byteContt) mutable
+			{
+				if (err)
+				{
+					callable(err, HttpResponse{});
+					DeferDeletion();
+					return;
+				}
 
+				callable(std::error_code{}, m_populator.ResponseData());
+				DeferDeletion();
+			});
+	}
+	
 	void DeferDeletion()
 	{
 		post(m_parameters.m_executor,
