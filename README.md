@@ -1,11 +1,7 @@
-# client-server
-A simple to use set of C++ libraries for networking
+#http and https client
 
 My aim is to implement:
 
-http client
-http server
-websocket client
-websocket server
+http and https client
 
 Library is header only
