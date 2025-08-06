@@ -6,17 +6,17 @@
 #include "../Common/HttpRequest.h"
 #include "../Common/HttpResponse.h"
 #include "../HttpClient/RequestGenerator.h"
+#include "LinkGenerator.h"
 
 
-class StressTester
+struct StressTester
 {
 	boost::asio::any_io_executor m_executor;
 	std::shared_ptr<boost::asio::ssl::context> m_sslContext;
 	int m_concurrency = 0;
-
-public:
 	std::atomic<int> m_succededCount = 0;
 	std::atomic<int> m_failedCount = 0;
+	LinkGenerator m_linkGenerator;
 	
 public:
 	explicit StressTester(boost::asio::io_context& ioContext, 
@@ -44,7 +44,7 @@ public:
 
 		auto client = HttpClient::Make(std::move(parameters));
 
-		std::string link = "http://127.0.0.1/a.txt";
+		std::string link = m_linkGenerator();
 
 		auto connectionsParams = makeConnectionParameters(link);
 

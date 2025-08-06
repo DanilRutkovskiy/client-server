@@ -23,5 +23,8 @@
     <ClInclude Include="..\..\src\HttpClientStressTest\StressTester.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\HttpClientStressTest\LinkGenerator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

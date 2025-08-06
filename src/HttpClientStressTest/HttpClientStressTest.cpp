@@ -37,7 +37,7 @@ std::shared_ptr<boost::asio::ssl::context> PrepareSslContext()
 void test()
 {
 	int concurrency = 500;
-	int numberOfThreads = 2000;
+	int numberOfThreads = 4;
 
 	boost::asio::io_context ioContext;
 	std::cout << "started" << std::endl;
