@@ -22,7 +22,18 @@ public:
 	{
 		HttpClientParameters parameters;
 		parameters.m_executor = m_executor;
-		parameters.m_sslContext = PrepareSslContext();
+		try
+		{
+			parameters.m_sslContext = PrepareSslContext();
+		}
+		catch (std::exception& ex)
+		{
+			std::cerr << "can't prepare ssl context: " << ex.what() << std::endl;
+		}
+		catch (...)
+		{
+			std::cerr << "can't prepare ssl context: unknown error" << std::endl;
+		}
 
 		auto client = HttpClient::Make(std::move(parameters));
 
@@ -35,7 +46,7 @@ public:
 			{
 				if (err)
 				{
-					std::cout << "ConnectAsync error occured: " << err.message() << std::endl;
+					std::cerr << "ConnectAsync error occured: " << err.message() << std::endl;
 					return;
 				}
 				std::cout << "ConnectAsync success" << std::endl;
@@ -46,7 +57,7 @@ public:
 					{
 						if (err)
 						{
-							std::cout << "error occured: " << err.message() << std::endl;
+							std::cerr << "Error occured: " << err.message() << std::endl;
 							return;
 						}
 
@@ -75,7 +86,7 @@ public:
 		const auto ret = SSL_CTX_set_cipher_list(sslContext->native_handle(), defaultCipherList);
 		if (!ret)
 		{
-			throw ("can't set cipher list");
+			throw std::exception("can't set cipher list");
 		}
 
 		auto options = context::default_workarounds | 

@@ -129,7 +129,7 @@ private:
 			{
 				if (err)
 				{
-					std::cout << "error after send message: " << err.what() << std::endl;
+					std::cerr << "error after send message: " << err.what() << std::endl;
 				}
 			});
 	}
@@ -178,7 +178,7 @@ private:
 			{
 				if (err)
 				{
-					std::cout << "connect error occured: " << err.message() << std::endl;
+					std::cerr << "connect error occured: " << err.message() << std::endl;
 					callable(err);
 					DeferDeletion();
 				}
