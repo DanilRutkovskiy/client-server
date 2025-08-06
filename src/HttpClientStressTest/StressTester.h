@@ -48,8 +48,9 @@ public:
 
 		auto connectionsParams = makeConnectionParameters(link);
 
+		const auto beforeConnect = std::chrono::steady_clock::now();
 		client->ConnectAsync(std::move(connectionsParams),
-			[client, link, this](std::error_code err)
+			[client, link, this, beforeConnect](std::error_code err)
 			{
 				if (err)
 				{
@@ -57,12 +58,15 @@ public:
 					std::cout << "ConnectAsync error occured: " << err.message() << std::endl;
 					return;
 				}
-				std::cout << "ConnectAsync success" << std::endl;
+				const auto afterConnect = std::chrono::steady_clock::now();
+				auto connectMSec = 
+					std::chrono::duration_cast<std::chrono::milliseconds>(afterConnect - beforeConnect);
+				std::cout << "Connection success in: " << connectMSec.count() << "millis" << std::endl;
 
 				auto request = makeGetRequest(link);
 
 				client->SendAsync(request, 
-					[this](std::error_code err, HttpResponse response)
+					[this, afterConnect](std::error_code err, HttpResponse response)
 					{
 						if (err)
 						{
@@ -70,6 +74,12 @@ public:
 							std::cout << "error occured: " << err.message() << std::endl;
 							return;
 						}
+
+						const auto received = std::chrono::steady_clock::now();
+						auto receiveTime =
+							std::chrono::duration_cast<std::chrono::milliseconds>(received - afterConnect);
+						std::cout << "Receive in: " << receiveTime.count() << "millis" << std::endl;
+
 
 						auto valid = Validate(response);
 						if (valid)
