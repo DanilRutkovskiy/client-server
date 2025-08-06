@@ -27,7 +27,7 @@ public:
 		m_resolver.async_resolve	
 		(
 			connectionParams.m_host, connectionParams.m_port,
-			[callable = std::move(callable), sharedThis = this->shared_from_this(), this, host = connectionParams.m_host]
+			[callable = std::move(callable), this, host = connectionParams.m_host]
 			(boost::system::error_code err, const boost::asio::ip::tcp::resolver::results_type& endpoints) mutable
 			{
 				if (err)
@@ -40,52 +40,14 @@ public:
 
 				if (m_useTls)
 				{
-					if (!SSL_set_tlsext_host_name(m_tlsSocket->native_handle(), host.c_str()))
-					{
-						callable(std::make_error_code(static_cast<std::errc>(static_cast<int>(::ERR_get_error()))));
-						return;
-					}
-
-					auto& socket = sharedThis->m_tlsSocket;
-					boost::asio::async_connect(socket->lowest_layer(), endpoints,
-						[callable = std::move(callable), sharedThis = std::move(sharedThis), this]
-						(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
-						{
-							if (err)
-							{
-								std::cout << "connect error occured: " << err.message() << std::endl;
-								callable(err);
-								DeferDeletion();
-							}
-
-							m_tlsSocket->async_handshake(boost::asio::ssl::stream_base::client, 
-								[callable = std::move(callable), this](boost::system::error_code err)
-								{
-									callable(err);
-									DeferDeletion();
-								});
-
-							DeferDeletion();
-						});
+					onTlsResolve(host, endpoints, std::move(callable));
 				}
 				else
 				{
-					auto& socket = sharedThis->m_socket;
-					boost::asio::async_connect(socket, endpoints,
-						[callable = std::move(callable), sharedThis = std::move(sharedThis), this]
-						(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
-						{
-							if (err)
-							{
-								std::cout << "connect error occured: " << err.message() << std::endl;
-								callable(err);
-								DeferDeletion();
-							}
-
-							callable(std::error_code{});
-							DeferDeletion();
-						});
+					onResolve(endpoints, std::move(callable));
 				}
+
+				DeferDeletion();
 			}
 		);
 	}
@@ -184,6 +146,57 @@ private:
 			[sharedThis = this->shared_from_this()]() mutable
 			{
 				sharedThis.reset();
+			});
+	}
+
+	template<typename Callable>
+	void onTlsResolve(const std::string& host, const boost::asio::ip::tcp::resolver::results_type& endpoints, Callable callable)
+	{
+		if (!SSL_set_tlsext_host_name(m_tlsSocket->native_handle(), host.c_str()))
+		{
+			callable(std::make_error_code(static_cast<std::errc>(static_cast<int>(::ERR_get_error()))));
+			DeferDeletion();
+			return;
+		}
+
+		boost::asio::async_connect(m_tlsSocket->lowest_layer(), endpoints,
+			[callable = std::move(callable), this]
+			(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
+			{
+				if (err)
+				{
+					std::cout << "connect error occured: " << err.message() << std::endl;
+					callable(err);
+					DeferDeletion();
+				}
+
+				m_tlsSocket->async_handshake(boost::asio::ssl::stream_base::client,
+					[callable = std::move(callable), this](boost::system::error_code err)
+					{
+						callable(err);
+						DeferDeletion();
+					});
+
+				DeferDeletion();
+			});
+	}
+
+	template<typename Callable>
+	void onResolve(const boost::asio::ip::tcp::resolver::results_type& endpoints, Callable callable)
+	{
+		boost::asio::async_connect(m_socket, endpoints,
+			[callable = std::move(callable), this]
+			(boost::system::error_code err, boost::asio::ip::tcp::endpoint ep)
+			{
+				if (err)
+				{
+					std::cout << "connect error occured: " << err.message() << std::endl;
+					callable(err);
+					DeferDeletion();
+				}
+
+				callable(std::error_code{});
+				DeferDeletion();
 			});
 	}
 
