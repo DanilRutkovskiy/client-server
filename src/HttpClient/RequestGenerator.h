@@ -4,14 +4,19 @@
 
 #include <boost/url.hpp>
 
-HttpRequest makeGetRequest(const std::string& link)
+class RequestCreator
 {
-	auto parsedLink = boost::urls::parse_uri(link);
+public:
+	static HttpRequest makeGetRequest(const std::string& link)
+	{
+		auto parsedLink = boost::urls::parse_uri(link);
 
-	HttpRequest request;
-	request.m_host = parsedLink->host_address();
-	request.m_verb = HttpVerb::GET;
-	request.m_path = parsedLink->path();
+		HttpRequest request;
+		request.m_host = parsedLink->host_address();
+		request.m_verb = HttpVerb::GET;
+		request.m_path = parsedLink->path();
 
-	return request;
-}
+		return request;
+	}
+};
+

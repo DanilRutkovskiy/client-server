@@ -127,6 +127,7 @@ struct HttpResponsePopulator
 			return std::make_pair(begin, done);
 		}
 		//never reach here
+		assert(false);
 		return std::make_pair(end, done);
 	}
 

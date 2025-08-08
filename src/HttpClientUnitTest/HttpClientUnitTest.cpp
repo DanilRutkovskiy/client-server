@@ -19,7 +19,7 @@ TEST_CASE("Http Connection Parameters Parsing")
 
 TEST_CASE("Get Request Generate Parsing")
 {
-	const auto r1 = makeGetRequest("http://httpbin.org/get");
+	const auto r1 = RequestCreator::makeGetRequest("http://httpbin.org/get");
 	CHECK(r1.m_host == "httpbin.org");
 	CHECK(r1.m_verb == HttpVerb::GET);
 	CHECK(r1.m_path == "/get");

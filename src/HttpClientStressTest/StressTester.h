@@ -63,7 +63,7 @@ public:
 					std::chrono::duration_cast<std::chrono::milliseconds>(afterConnect - beforeConnect);
 				std::cout << "Connection success in: " << connectMSec.count() << "millis" << std::endl;
 
-				auto request = makeGetRequest(link);
+				auto request = RequestCreator::makeGetRequest(link);
 
 				client->SendAsync(request, 
 					[this, afterConnect](std::error_code err, HttpResponse response)
