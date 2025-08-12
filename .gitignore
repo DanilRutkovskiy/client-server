@@ -407,3 +407,5 @@ FodyWeavers.xsd
 *.msp
 
 *.exe
+#my rules
+*build
