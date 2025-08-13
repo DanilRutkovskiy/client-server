@@ -8,7 +8,7 @@ set(BOOST_ROOT "D:/libs/boost_1_88_0")
 set(Boost_LIBRARY_DIRS "D:/libs/boost_1_88_0/stage")
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
-find_package(Boost REQUIRED COMPONENTS system thread chrono)
+find_package(Boost REQUIRED COMPONENTS system thread chrono url)
 
 set(HTTP_CLIENT_LIB_INCLUDES
 	"${CMAKE_CURRENT_SOURCE_DIR}"
@@ -29,4 +29,5 @@ target_link_libraries(${HTTP_CLIENT_LIB_NAME} INTERFACE
 	Boost::system
 	Boost::thread
 	Boost::chrono
+	Boost::url
 )

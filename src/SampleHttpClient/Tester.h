@@ -38,7 +38,7 @@ public:
 
 		auto client = HttpClient::Make(std::move(parameters));
 
-		std::string link = "https://httpbin.org/get";
+		std::string link = "http://httpbin.org/get";
 
 		auto connectionsParams = makeConnectionParameters(link);
 
