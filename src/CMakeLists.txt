@@ -16,5 +16,9 @@ find_package(OpenSSL REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
+file(GLOB BOOST_ALL_LIBS "${Boost_LIBRARY_DIRS}/*.lib")
+
 add_subdirectory(HttpClient)
 add_subdirectory(SampleHttpClient)
+add_subdirectory(Common)
+add_subdirectory(HttpClientUnitTest)

@@ -7,4 +7,5 @@ target_include_directories(HttpClientLib INTERFACE
 
 target_link_libraries(HttpClientLib INTERFACE
     ${Boost_LIBRARIES}
+    Common
 )

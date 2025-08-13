@@ -1,4 +1,4 @@
-﻿#define CATCH_MAIN_CONFIG
+﻿#define CATCH_CONFIG_MAIN
 
 #include "../../../../libs/thirdparty/include/catch2/catch_amalgamated.hpp"
 #include "../HttpClient/ConnectionParameters.h"
