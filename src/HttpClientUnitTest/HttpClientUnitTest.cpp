@@ -1,6 +1,6 @@
 ﻿#define CATCH_CONFIG_MAIN
 
-#include "../../../../libs/thirdparty/include/catch2/catch_amalgamated.hpp"
+#include "catch2/catch_test_macros.hpp"
 #include "../HttpClient/ConnectionParameters.h"
 #include "../HttpClient/RequestGenerator.h"
 

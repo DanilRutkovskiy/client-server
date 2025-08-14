@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Common//HttpRequest.h"
+#include <HttpRequest.h>
 
 #include <boost/url.hpp>
 

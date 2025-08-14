@@ -5,11 +5,11 @@
 
 #include "HttpClientParameters.h"
 #include "ConnectionParameters.h"
-#include "../Common/HttpRequest.h"
-#include "../Common/HttpResponse.h"
+#include <HttpRequest.h>
+#include <HttpResponse.h>
 #include "HttpResponsePopulator.h"
 #include "HttpResponseStreamParser.h"
-#include "../Common/HttpRequestSerializer.h"
+#include <HttpRequestSerializer.h>
 
 class HttpClient : public std::enable_shared_from_this<HttpClient>
 {

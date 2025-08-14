@@ -1,5 +1,5 @@
 #pragma once
-#include "../Common/HttpHeader.h"
+#include <HttpHeader.h>
 #include <string>
 #include <tuple>
 #include "boost/algorithm/string.hpp"

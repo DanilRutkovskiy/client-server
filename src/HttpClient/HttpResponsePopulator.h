@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <utility>
 #include <algorithm>
-#include "../Common/HttpHeader.h"
+#include <HttpHeader.h>
 #include "HttpHeaderParser.h"
 
 enum class ParserState
