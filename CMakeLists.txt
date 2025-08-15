@@ -4,13 +4,12 @@ project(HttpClientSuite VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(BOOST_ROOT "D:/libs/boost_1_88_0")
-set(Boost_LIBRARY_DIRS "D:/libs/boost_1_88_0/stage/lib")
+set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../libs/boost_1_88_0")
 set(Boost_NO_WARN_NEW_VERSIONS ON)
+
 find_package(Boost REQUIRED)
 
-set(OPENSSL_ROOT_DIR "C:/openssl-install")
-set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT_DIR}/include")
+set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libs/openssl")
 find_package(OpenSSL REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
@@ -37,8 +36,5 @@ if(USE_CPM)
         message(FATAL_ERROR "Failed to fetch Catch2 via CPM")
     endif()
 endif()
-
-include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-file(GLOB BOOST_ALL_LIBS "${Boost_LIBRARY_DIRS}/*.lib")
 
 add_subdirectory(src)

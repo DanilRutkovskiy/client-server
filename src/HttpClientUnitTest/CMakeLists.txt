@@ -8,13 +8,12 @@ target_compile_definitions(${HTTP_CLIENT_UNIT_TEST_NAME} PUBLIC _WIN32_WINNT=0x0
 
 target_include_directories(${HTTP_CLIENT_UNIT_TEST_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Boost_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(${HTTP_CLIENT_UNIT_TEST_NAME} PUBLIC
     HttpClientLib
     Catch2::Catch2WithMain
-    ${BOOST_ALL_LIBS}
 )
 
 
