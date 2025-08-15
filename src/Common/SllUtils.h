@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <config.hpp>
 #include <boost/asio/ssl.hpp>
 
 std::shared_ptr<boost::asio::ssl::context> PrepareSslContext()
@@ -7,7 +8,7 @@ std::shared_ptr<boost::asio::ssl::context> PrepareSslContext()
 	using namespace boost::asio::ssl;
 	auto sslContext = std::make_shared<context>(context::tlsv12);
 
-	sslContext->load_verify_file("cacert.pem");
+	sslContext->load_verify_file(std::string(resourceFolderPath) + "/cacert.pem");
 	sslContext->set_verify_mode(verify_peer);
 
 	sslContext->set_verify_callback([](bool preverified, verify_context& verifyContext)

@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../libs/boost_1_88_0")
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
+set(RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+
 find_package(Boost REQUIRED)
 
 set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libs/openssl")
@@ -38,3 +40,4 @@ if(USE_CPM)
 endif()
 
 add_subdirectory(src)
+add_subdirectory(config)
